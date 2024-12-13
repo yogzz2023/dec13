@@ -1,0 +1,77 @@
+Creating UML diagrams for your code can help visualize the structure and flow of your application. Below are the PlantUML codes for the state transition diagram, activity diagram, and sequence diagram based on the provided code.
+
+### State Transition Diagram
+
+The state transition diagram will represent the different states a track can be in and how it transitions between these states.
+
+```plantuml
+@startuml
+[*] --> Poss1
+Poss1 --> Tentative1 : Hit count >= threshold
+Tentative1 --> Firm : Hit count >= threshold
+Poss1 --> [*] : Timeout
+Tentative1 --> [*] : Timeout
+Firm --> [*] : Timeout
+@enduml
+```
+
+### Activity Diagram
+
+The activity diagram will illustrate the flow of operations in your `main` function, focusing on processing measurement groups and updating tracks.
+
+```plantuml
+@startuml
+start
+:Read measurements from CSV;
+repeat
+    :Get next measurement group;
+    if (Single measurement?) then (yes)
+        :Check correlation with existing tracks;
+        if (Correlated?) then (yes)
+            :Update track;
+        else (no)
+            :Create new track;
+        endif
+    else (no)
+        :Perform association (JPDA/Munkres);
+        :Update tracks with best reports;
+    endif
+repeat while (More measurement groups?)
+:Check track timeouts;
+:Update track states;
+stop
+@enduml
+```
+
+### Sequence Diagram
+
+The sequence diagram will show the interaction between different components when processing data and updating tracks.
+
+```plantuml
+@startuml
+actor User
+participant "KalmanFilterGUI" as GUI
+participant "main" as Main
+participant "CVFilter" as Filter
+participant "Track" as Track
+
+User -> GUI: Select File
+User -> GUI: Click Process
+GUI -> Main: process_data()
+Main -> Main: read_measurements_from_csv()
+Main -> Main: form_measurement_groups()
+Main -> Filter: initialize_filter_state()
+Main -> Track: Check correlation
+alt Correlated
+    Main -> Filter: predict_step()
+    Main -> Filter: update_step()
+else Not Correlated
+    Main -> Track: Create new track
+end
+Main -> Main: check_track_timeout()
+Main -> Main: update_track_states()
+GUI -> GUI: update_plot()
+@enduml
+```
+
+These diagrams provide a high-level overview of the state transitions, activities, and interactions in your code. You can use PlantUML to render these diagrams into visual representations.
