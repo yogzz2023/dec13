@@ -1,0 +1,267 @@
+Certainly! Here's a pseudo code representation for each function in the provided Python script. This will help you understand the flow and logic without getting into the specifics of the syntax.
+
+### OutputStream Class
+```plaintext
+Class OutputStream:
+    Initialize with text_edit
+    Method write(text):
+        Append text to text_edit
+    Method flush():
+        Do nothing
+```
+
+### CVFilter Class
+```plaintext
+Class CVFilter:
+    Initialize:
+        Initialize state vectors and matrices
+        Set plant noise, measurement matrix, and other parameters
+
+    Method initialize_filter_state(x, y, z, vx, vy, vz, time):
+        If first_rep_flag is False:
+            Set initial measurement and state
+            Set first_rep_flag to True
+        Else if second_rep_flag is False:
+            Calculate velocity from two measurements
+            Set second_rep_flag to True
+        Else:
+            Update measurement vector
+
+    Method predict_step(current_time):
+        Calculate time difference dt
+        Update state transition matrix Phi
+        Update process noise covariance Q
+        Predict next state and covariance
+
+    Method update_step(Z):
+        Calculate innovation
+        Calculate Kalman gain
+        Update state and covariance
+```
+
+### Helper Functions
+```plaintext
+Function read_measurements_from_csv(file_path):
+    Open CSV file
+    For each row in CSV:
+        Convert spherical to Cartesian coordinates
+        Append to measurements list
+    Return measurements
+
+Function sph2cart(az, el, r):
+    Convert spherical coordinates to Cartesian
+    Return x, y, z
+
+Function cart2sph(x, y, z):
+    Convert Cartesian coordinates to spherical
+    Return r, az, el
+
+Function form_measurement_groups(measurements, max_time_diff):
+    Initialize empty groups
+    For each measurement:
+        If within time difference, add to current group
+        Else, start a new group
+    Return measurement groups
+
+Function form_clusters_via_association(tracks, reports, kalman_filter):
+    Initialize association list
+    For each track and report:
+        Calculate Mahalanobis distance
+        If within threshold, add to association list
+    Form clusters from associations
+    Return clusters
+
+Function mahalanobis_distance(track, report, cov_inv):
+    Calculate residual
+    Calculate and return Mahalanobis distance
+
+Function select_best_report(cluster_tracks, cluster_reports, kalman_filter):
+    Initialize best report and track index
+    For each track and report:
+        Calculate weight
+        If weight is highest, update best report and track index
+    Return best track index and report
+
+Function select_initiation_mode(mode):
+    Return state count based on mode
+
+Function doppler_correlation(doppler_1, doppler_2, doppler_threshold):
+    Return True if doppler difference is within threshold
+
+Function correlation_check(track, measurement, doppler_threshold, range_threshold):
+    Calculate distance between track and measurement
+    Check doppler correlation and range satisfaction
+    Return True if both conditions are met
+
+Function initialize_filter_state(kalman_filter, x, y, z, vx, vy, vz, time):
+    Call kalman_filter's initialize_filter_state method
+
+Function perform_jpda(tracks, reports, kalman_filter):
+    Form clusters
+    For each cluster:
+        Generate hypotheses and probabilities
+        Normalize probabilities
+        Select best hypothesis
+        Remove bias
+    Perform track coalescence
+    Return clusters, coalesced tracks, hypotheses, probabilities
+
+Function perform_munkres(tracks, reports, kalman_filter):
+    Create cost matrix
+    Use linear sum assignment to find best reports
+    Return best reports
+
+Function check_track_timeout(tracks, current_time, poss_timeout, firm_tent_timeout):
+    Initialize tracks to remove
+    For each track:
+        Calculate time since last measurement
+        If timeout conditions met, add to remove list
+    Return tracks to remove
+
+Function plot_measurements(tracks, ax, plot_type, selected_track_ids):
+    Clear plot
+    For each track:
+        If track is selected, plot measurements and state
+    Add interactive data tips
+
+Function log_to_csv(log_file_path, data):
+    Open CSV file in append mode
+    Write data to CSV
+```
+
+### Main Function
+```plaintext
+Function main(input_file, track_mode, filter_option, association_type):
+    Initialize log file
+    Read measurements from CSV
+    Initialize Kalman filter based on filter_option
+    Form measurement groups
+    Initialize tracking variables
+    For each measurement group:
+        Check for track timeouts
+        If single measurement:
+            Check correlation with existing tracks
+            If correlated, update track
+            Else, create new track
+        Else (multiple measurements):
+            Perform association (JPDA or Munkres)
+            Update tracks with best reports
+            Handle unassigned measurements
+        Update track states based on hit counts
+    Prepare and write track summary to CSV
+    Return tracks
+```
+
+### SystemConfigDialog Class
+```plaintext
+Class SystemConfigDialog(QDialog):
+    Initialize:
+        Set window title and geometry
+        Create layout and input fields for configuration
+        Add OK and Cancel buttons
+    Method get_config_data():
+        Return configuration data from input fields
+```
+
+### PlotConfigDialog Class
+```plaintext
+Class PlotConfigDialog(QDialog):
+    Initialize:
+        Set window title and geometry
+        Create layout and input fields for plot configuration
+        Add OK and Cancel buttons
+    Method get_config_data():
+        Return plot configuration data from input fields
+```
+
+### Signal Class
+```plaintext
+Class Signal(QObject):
+    Define collapseSignal as a pyqtSignal
+```
+
+### KalmanFilterGUI Class
+```plaintext
+Class KalmanFilterGUI(QWidget):
+    Initialize:
+        Set window title and geometry
+        Initialize UI components
+        Redirect stdout to output display
+        Set initial configuration data
+        Connect filter buttons to selection method
+        Set initial filter mode
+
+    Method initUI():
+        Set up main layout
+        Add control panel with buttons and configuration sections
+        Add plot and track info tabs
+        Set up plot widget and output display
+        Connect buttons to their respective methods
+
+    Method toggle_control_panel():
+        Toggle visibility of control panel
+
+    Method toggle_system_config():
+        Toggle visibility of system configuration group
+
+    Method toggle_visualization():
+        Toggle visibility of visualization group
+
+    Method toggle_plot_settings():
+        Toggle visibility of plot settings group
+
+    Method select_file():
+        Open file dialog to select input file
+
+    Method process_data():
+        Get selected options
+        Call main function with selected parameters
+        Update plot and track checkboxes
+
+    Method update_plot():
+        Clear plot widget
+        Plot tracks based on selected plot type
+
+    Method update_marker_size(size):
+        Set marker size based on selection
+        Update plot
+
+    Method update_plot_color(color):
+        Set plot color based on selection
+        Update plot
+
+    Method show_config_dialog():
+        Open plot configuration dialog
+
+    Method select_filter(filter_type):
+        Set filter mode and update selection
+
+    Method update_filter_selection():
+        Update filter button states based on selected filter
+
+    Method clear_plot():
+        Clear plot widget
+
+    Method load_csv(file_path):
+        Load CSV file and display in table
+
+    Method show_console_output():
+        Toggle visibility of console output
+
+    Method plot_type_selected(plot_type):
+        Set current plot type and update plot
+
+    Method toggle_select_all_tracks():
+        Toggle selection of all tracks
+        Update plot
+
+    Method update_selected_tracks():
+        Update selected track IDs based on checkboxes
+        Update plot
+
+    Method update_track_checkboxes():
+        Clear existing checkboxes
+        Add checkboxes for each track
+```
+
+This pseudo code provides a high-level overview of the logic and flow of each function and class in the provided script.
