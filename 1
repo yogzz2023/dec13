@@ -1,0 +1,12 @@
+def check_track_timeout(tracks, current_time, poss_timeout=0.5, firm_tent_timeout=1.0):
+    tracks_to_remove = []
+    for track_id, track in enumerate(tracks):
+        last_measurement_time = track['measurements'][-1][0][3]  # Assuming the time is at index 3
+        time_since_last_measurement = current_time - last_measurement_time
+
+        if track['current_state'] == 'Poss1' and time_since_last_measurement > poss_timeout:
+            tracks_to_remove.append(track_id)
+        elif track['current_state'] in ['Tentative1', 'Firm'] and time_since_last_measurement > firm_tent_timeout:
+            tracks_to_remove.append(track_id)
+
+    return tracks_to_remove
